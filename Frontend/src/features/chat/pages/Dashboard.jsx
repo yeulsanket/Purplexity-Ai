@@ -315,9 +315,16 @@ const Dashboard = () => {
               ))}
 
               {isLoading && (
-                <div className='flex items-center gap-3 text-sm text-cyan-400/80 p-3 border border-cyan-500/20 bg-cyan-500/5 rounded-2xl w-fit animate-pulse'>
-                  <div className='h-4 w-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin' />
-                  Perplexity ({selectedModel}) is thinking & searching...
+                <div className='relative flex items-center gap-3 text-sm text-cyan-300 p-3 border border-cyan-500/40 bg-cyan-500/10 rounded-2xl w-fit shadow-[0_0_30px_-5px_rgba(6,182,212,0.4)]'>
+                  {/* Glowing backdrop layer */}
+                  <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-xl animate-pulse" />
+                  
+                  {/* Spinner */}
+                  <div className='relative h-4 w-4 rounded-full border-2 border-cyan-300 border-t-transparent animate-spin shadow-[0_0_10px_rgba(34,211,238,0.8)]' />
+                  
+                  <span className='relative font-medium tracking-wide animate-pulse'>
+                    Perplexity ({selectedModel}) is thinking & searching...
+                  </span>
                 </div>
               )}
             </div>
