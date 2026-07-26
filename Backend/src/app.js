@@ -17,11 +17,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || origin === process.env.FRONTEND_URL || origin.endsWith("vercel.app") || origin.includes("localhost")) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
+        callback(null, true);
     },
     credentials: true,
     methods: [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
