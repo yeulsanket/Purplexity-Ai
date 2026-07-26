@@ -64,7 +64,7 @@ function getModel(modelChoice = "grok") {
 
     if (modelChoice === "gemini" && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "your_gemini_api_key_here") {
         return new ChatGoogleGenerativeAI({
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-pro",
             apiKey: process.env.GEMINI_API_KEY
         });
     }
@@ -83,7 +83,7 @@ function getModel(modelChoice = "grok") {
 
     if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "your_gemini_api_key_here") {
         return new ChatGoogleGenerativeAI({
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-flash-latest",
             apiKey: process.env.GEMINI_API_KEY
         });
     }
@@ -123,21 +123,14 @@ export async function generateResponse(messages, modelChoice = "grok") {
             }))
         ];
 
-        if (modelChoice === "grok" || modelChoice === "groq") {
-            const res = await model.invoke(formattedMsgs);
+        const res = await model.invoke(formattedMsgs);
+        if (res && res.content) {
+            return res.content;
+        } else if (res && res.text) {
             return res.text;
         }
-
-        const agent = createAgent({
-            model,
-            tools: [searchInternetTool],
-        });
-
-        const response = await agent.invoke({
-            messages: formattedMsgs
-        });
-
-        return response.messages[response.messages.length - 1].text;
+        
+        return "I processed your request, but the AI returned an empty response.";
     } catch (err) {
         console.error("AI Generation Error:", err.message);
         return `⚠️ AI Error: ${err.message || "Failed to generate AI response"}. Please check your API key in Backend/.env.`;
