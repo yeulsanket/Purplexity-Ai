@@ -2,33 +2,53 @@ import { initializeSocketConnection } from "../service/chat.socket";
 import { sendMessage, getChats, getMessages, deleteChat } from "../service/chat.api";
 import { setChats, setCurrentChatId, setError, setLoading, createNewChat, addNewMessage, addMessages, removeChat } from "../chat.slice";
 import { useDispatch } from "react-redux";
-
+import { useRef } from "react";
 
 export const useChat = () => {
 
     const dispatch = useDispatch()
+    const abortControllerRef = useRef(null)
 
 
     async function handleSendMessage({ message, chatId, model }) {
         dispatch(setLoading(true))
-        const data = await sendMessage({ message, chatId, model })
-        const { chat, aiMessage } = data
-        if (!chatId)
-            dispatch(createNewChat({
-                chatId: chat._id,
-                title: chat.title,
+        abortControllerRef.current = new AbortController()
+
+        try {
+            const data = await sendMessage({ message, chatId, model, signal: abortControllerRef.current.signal })
+            const { chat, aiMessage } = data
+            if (!chatId)
+                dispatch(createNewChat({
+                    chatId: chat._id,
+                    title: chat.title,
+                }))
+            dispatch(addNewMessage({
+                chatId: chatId || chat._id,
+                content: message,
+                role: "user",
             }))
-        dispatch(addNewMessage({
-            chatId: chatId || chat._id,
-            content: message,
-            role: "user",
-        }))
-        dispatch(addNewMessage({
-            chatId: chatId || chat._id,
-            content: aiMessage.content,
-            role: aiMessage.role,
-        }))
-        dispatch(setCurrentChatId(chat._id))
+            dispatch(addNewMessage({
+                chatId: chatId || chat._id,
+                content: aiMessage.content,
+                role: aiMessage.role,
+            }))
+            dispatch(setCurrentChatId(chat._id))
+        } catch (err) {
+            if (err.name === 'CanceledError' || err.name === 'AbortError') {
+                console.log("Request aborted")
+            } else {
+                console.error("Failed to send message:", err)
+            }
+        } finally {
+            dispatch(setLoading(false))
+            abortControllerRef.current = null
+        }
+    }
+
+    function abortMessage() {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort()
+        }
     }
 
     async function handleGetChats() {
@@ -87,7 +107,8 @@ export const useChat = () => {
         handleGetChats,
         handleOpenChat,
         handleDeleteChat,
-        handleStartNewChat
+        handleStartNewChat,
+        abortMessage
     }
 
 }

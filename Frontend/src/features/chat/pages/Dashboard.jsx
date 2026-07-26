@@ -344,13 +344,23 @@ const Dashboard = () => {
                   placeholder='Ask anything...'
                   className='w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base md:text-lg text-white outline-none transition placeholder:text-white/40 focus:border-cyan-400/70 focus:bg-black/30'
                 />
-                <button
-                  type='submit'
-                  disabled={!chatInput.trim() || isLoading}
-                  className='w-full md:w-auto rounded-2xl border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 text-base font-semibold text-white transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-40 shadow-lg shadow-cyan-500/10 whitespace-nowrap'
-                >
-                  Ask ➜
-                </button>
+                {isLoading ? (
+                  <button
+                    type='button'
+                    onClick={() => chat.abortMessage()}
+                    className='w-full md:w-auto rounded-2xl border border-red-400/50 bg-gradient-to-r from-red-600 to-pink-600 px-6 py-3 text-base font-semibold text-white transition hover:from-red-500 hover:to-pink-500 shadow-lg shadow-red-500/10 whitespace-nowrap flex items-center justify-center gap-2'
+                  >
+                    <span className="animate-pulse">🛑</span> Stop
+                  </button>
+                ) : (
+                  <button
+                    type='submit'
+                    disabled={!chatInput.trim() || isLoading}
+                    className='w-full md:w-auto rounded-2xl border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 text-base font-semibold text-white transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-40 shadow-lg shadow-cyan-500/10 whitespace-nowrap'
+                  >
+                    Ask ➜
+                  </button>
+                )}
               </form>
             </div>
           </footer>
