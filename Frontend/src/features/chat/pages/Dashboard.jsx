@@ -308,7 +308,7 @@ const Dashboard = () => {
             </div>
           ) : (
             /* Chat Messages Container */
-            <div className='flex flex-col h-full relative'>
+            <div className='flex flex-col flex-1 min-h-0 relative'>
               <div className='messages flex-1 space-y-4 overflow-y-auto px-4 md:px-6 pt-4 pb-48 custom-scrollbar w-full max-w-4xl mx-auto'>
               {currentMessages.map((message, idx) => (
                 <div
