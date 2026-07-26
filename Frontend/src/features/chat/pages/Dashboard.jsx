@@ -71,6 +71,58 @@ const Dashboard = () => {
   const currentMessages = (activeChat && Array.isArray(activeChat.messages)) ? activeChat.messages : [];
   const showHeroView = !currentChatId || currentMessages.length === 0;
 
+  const renderSearchBox = () => (
+    <div className='w-full rounded-3xl border border-white/15 bg-[#0b0f19] p-3 md:p-4 shadow-2xl backdrop-blur-xl'>
+      {/* Focus Pills */}
+      <div className='flex items-center gap-2 mb-3 overflow-x-auto pb-1 no-scrollbar text-xs'>
+        <span className='text-white/40 font-semibold uppercase text-[10px] tracking-wider pr-1'>Focus:</span>
+        {focusModes.map((mode) => (
+          <button
+            key={mode.id}
+            onClick={() => setSearchFocus(mode.id)}
+            type='button'
+            title={mode.desc}
+            className={`cursor-pointer rounded-xl px-3 py-1.5 font-medium transition whitespace-nowrap ${
+              searchFocus === mode.id
+                ? 'border border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-sm'
+                : 'border border-white/10 bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            {mode.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Input Form */}
+      <form onSubmit={handleSubmitMessage} className='flex flex-col gap-3 md:flex-row items-center'>
+        <input
+          type='text'
+          value={chatInput}
+          onChange={(event) => setChatInput(event.target.value)}
+          placeholder='Ask anything...'
+          className='w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base md:text-lg text-white outline-none transition placeholder:text-white/40 focus:border-cyan-400/70 focus:bg-black/30'
+        />
+        {isLoading ? (
+          <button
+            type='button'
+            onClick={() => chat.abortMessage()}
+            className='w-full md:w-auto rounded-2xl border border-red-400/50 bg-gradient-to-r from-red-600 to-pink-600 px-6 py-3 text-base font-semibold text-white transition hover:from-red-500 hover:to-pink-500 shadow-lg shadow-red-500/10 whitespace-nowrap flex items-center justify-center gap-2'
+          >
+            <span className="animate-pulse">🛑</span> Stop
+          </button>
+        ) : (
+          <button
+            type='submit'
+            disabled={!chatInput.trim() || isLoading}
+            className='w-full md:w-auto rounded-2xl border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 text-base font-semibold text-white transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-40 shadow-lg shadow-cyan-500/10 whitespace-nowrap'
+          >
+            Ask ➜
+          </button>
+        )}
+      </form>
+    </div>
+  );
+
   return (
     <main className='min-h-screen w-full bg-[#07090f] p-2 text-white md:p-5 font-sans'>
       <section className='mx-auto flex h-[calc(100vh-1rem)] w-full gap-4 rounded-3xl md:h-[calc(100vh-2.5rem)] md:gap-6 border-none'>
@@ -179,10 +231,10 @@ const Dashboard = () => {
         </aside>
 
         {/* Main Content Area */}
-        <section className='relative max-w-4xl mx-auto flex h-full min-w-0 flex-1 flex-col gap-4 bg-[#080b12] rounded-3xl border border-white/10 p-4 md:p-6 shadow-2xl'>
+        <section className='relative w-full flex h-full min-w-0 flex-1 flex-col bg-[#080b12] rounded-3xl border border-white/10 shadow-2xl overflow-hidden'>
           
           {/* Top Bar with Model Selector */}
-          <div className='flex items-center justify-between border-b border-white/10 pb-3'>
+          <div className='flex items-center justify-between border-b border-white/10 px-4 py-3 md:px-6'>
             <div className='flex items-center gap-2'>
               <button 
                 className='md:hidden p-1.5 -ml-2 text-white/70 hover:text-white cursor-pointer'
@@ -224,19 +276,19 @@ const Dashboard = () => {
 
           {/* Hero Welcome View (When no chat active or no messages) */}
           {showHeroView ? (
-            <div className='flex-1 flex flex-col items-center justify-center text-center px-4 max-w-2xl mx-auto space-y-6'>
+            <div className='flex-1 flex flex-col items-center justify-center text-center px-4 w-full max-w-4xl mx-auto py-10'>
               <div className='h-16 w-16 rounded-3xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-3xl font-extrabold text-cyan-400 shadow-2xl shadow-cyan-500/20 animate-pulse'>
                 P
               </div>
-              <h2 className='text-3xl md:text-4xl font-extrabold tracking-tight text-white'>
+              <h2 className='text-3xl md:text-4xl font-extrabold tracking-tight text-white mt-6 mb-4'>
                 Where knowledge begins
               </h2>
-              <p className='text-white/60 text-sm md:text-base leading-relaxed'>
+              <p className='text-white/60 text-sm md:text-base leading-relaxed mb-8'>
                 Ask any question, explore complex topics, or generate ideas powered by AI web search.
               </p>
 
               {/* Quick Prompts */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-3 w-full pt-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3 w-full mb-8'>
                 {quickPrompts.map((prompt, idx) => (
                   <button
                     key={idx}
@@ -248,10 +300,16 @@ const Dashboard = () => {
                   </button>
                 ))}
               </div>
+
+              {/* Search Footer Box INLINE for Hero */}
+              <div className='w-full'>
+                {renderSearchBox()}
+              </div>
             </div>
           ) : (
             /* Chat Messages Container */
-            <div className='messages flex-1 space-y-4 overflow-y-auto pr-2 pb-36 custom-scrollbar'>
+            <div className='flex flex-col h-full relative'>
+              <div className='messages flex-1 space-y-4 overflow-y-auto px-4 md:px-6 pt-4 pb-48 custom-scrollbar w-full max-w-4xl mx-auto'>
               {currentMessages.map((message, idx) => (
                 <div
                   key={idx}
@@ -328,61 +386,13 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
+
+            {/* Search Footer Box FIXED for Active Chat */}
+            <footer className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#080b12] via-[#080b12] to-transparent pt-10 pb-4 px-4 md:px-6 w-full max-w-4xl mx-auto'>
+              {renderSearchBox()}
+            </footer>
+          </div>
           )}
-
-          {/* Search Footer Box */}
-          <footer className='rounded-3xl w-full absolute bottom-3 left-0 right-0 px-4 md:px-6'>
-            <div className='rounded-3xl border border-white/15 bg-[#0b0f19] p-3 md:p-4 shadow-2xl backdrop-blur-xl'>
-              
-              {/* Focus Pills */}
-              <div className='flex items-center gap-2 mb-3 overflow-x-auto pb-1 no-scrollbar text-xs'>
-                <span className='text-white/40 font-semibold uppercase text-[10px] tracking-wider pr-1'>Focus:</span>
-                {focusModes.map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setSearchFocus(mode.id)}
-                    type='button'
-                    title={mode.desc}
-                    className={`cursor-pointer rounded-xl px-3 py-1.5 font-medium transition whitespace-nowrap ${
-                      searchFocus === mode.id
-                        ? 'border border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-sm'
-                        : 'border border-white/10 bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input Form */}
-              <form onSubmit={handleSubmitMessage} className='flex flex-col gap-3 md:flex-row items-center'>
-                <input
-                  type='text'
-                  value={chatInput}
-                  onChange={(event) => setChatInput(event.target.value)}
-                  placeholder='Ask anything...'
-                  className='w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base md:text-lg text-white outline-none transition placeholder:text-white/40 focus:border-cyan-400/70 focus:bg-black/30'
-                />
-                {isLoading ? (
-                  <button
-                    type='button'
-                    onClick={() => chat.abortMessage()}
-                    className='w-full md:w-auto rounded-2xl border border-red-400/50 bg-gradient-to-r from-red-600 to-pink-600 px-6 py-3 text-base font-semibold text-white transition hover:from-red-500 hover:to-pink-500 shadow-lg shadow-red-500/10 whitespace-nowrap flex items-center justify-center gap-2'
-                  >
-                    <span className="animate-pulse">🛑</span> Stop
-                  </button>
-                ) : (
-                  <button
-                    type='submit'
-                    disabled={!chatInput.trim() || isLoading}
-                    className='w-full md:w-auto rounded-2xl border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 text-base font-semibold text-white transition hover:from-cyan-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-40 shadow-lg shadow-cyan-500/10 whitespace-nowrap'
-                  >
-                    Ask ➜
-                  </button>
-                )}
-              </form>
-            </div>
-          </footer>
         </section>
       </section>
     </main>
