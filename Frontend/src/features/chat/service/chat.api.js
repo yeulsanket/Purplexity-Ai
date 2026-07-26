@@ -5,6 +5,14 @@ const api = axios.create({
     withCredentials: true,
 })
 
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => Promise.reject(error));
+
 
 export const sendMessage = async ({ message, chatId, model, signal }) => {
     const response = await api.post("/api/chats/message", { message, chat: chatId, model }, { signal })

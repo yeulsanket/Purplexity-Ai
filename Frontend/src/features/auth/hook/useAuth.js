@@ -13,6 +13,7 @@ export function useAuth() {
             dispatch(setLoading(true))
             dispatch(setError(null))
             const data = await register({ email, username, password })
+            if (data.token) localStorage.setItem("token", data.token);
             dispatch(setUser(data.user))
             return true
         } catch (error) {
@@ -28,6 +29,7 @@ export function useAuth() {
             dispatch(setLoading(true))
             dispatch(setError(null))
             const data = await login({ email, password })
+            if (data.token) localStorage.setItem("token", data.token);
             dispatch(setUser(data.user))
             return true
         } catch (err) {
@@ -58,6 +60,7 @@ export function useAuth() {
         } catch (err) {
             console.error("Logout failed:", err);
         }
+        localStorage.removeItem("token");
         dispatch(setUser(null));
     }
 
