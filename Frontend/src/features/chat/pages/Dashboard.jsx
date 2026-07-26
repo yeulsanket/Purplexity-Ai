@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [searchFocus, setSearchFocus] = useState('web');
   const [selectedModel, setSelectedModel] = useState('grok');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const chats = useSelector((state) => state.chat.chats) || {};
   const currentChatId = useSelector((state) => state.chat.currentChatId);
@@ -35,6 +36,7 @@ const Dashboard = () => {
 
   const openChat = (chatId) => {
     chat.handleOpenChat(chatId, chats);
+    setIsMobileMenuOpen(false);
   };
 
   const handleCopy = (text, idx) => {
@@ -73,8 +75,16 @@ const Dashboard = () => {
     <main className='min-h-screen w-full bg-[#07090f] p-2 text-white md:p-5 font-sans'>
       <section className='mx-auto flex h-[calc(100vh-1rem)] w-full gap-4 rounded-3xl md:h-[calc(100vh-2.5rem)] md:gap-6 border-none'>
         
+        {/* Mobile Overlay */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-black/60 md:hidden backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className='hidden h-full w-80 shrink-0 rounded-3xl border border-white/10 bg-[#0b0f19] p-4 md:flex md:flex-col justify-between shadow-2xl'>
+        <aside className={`${isMobileMenuOpen ? 'flex fixed inset-y-0 left-0 z-50 w-[80%] max-w-sm rounded-r-3xl' : 'hidden'} h-full md:w-80 shrink-0 md:rounded-3xl border border-white/10 bg-[#0b0f19] p-4 md:flex md:flex-col justify-between shadow-2xl transition-transform`}>
           <div className='flex flex-col h-full overflow-hidden'>
             <div className='flex items-center justify-between mb-4 px-1'>
               <div className='flex items-center gap-2'>
@@ -89,7 +99,10 @@ const Dashboard = () => {
 
             {/* New Thread Button */}
             <button
-              onClick={() => chat.handleStartNewChat()}
+              onClick={() => {
+                chat.handleStartNewChat();
+                setIsMobileMenuOpen(false);
+              }}
               type='button'
               className='mb-4 w-full cursor-pointer flex items-center justify-center gap-2 rounded-2xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/20 hover:border-cyan-400/70 shadow-lg shadow-cyan-500/5'
             >
@@ -171,8 +184,14 @@ const Dashboard = () => {
           {/* Top Bar with Model Selector */}
           <div className='flex items-center justify-between border-b border-white/10 pb-3'>
             <div className='flex items-center gap-2'>
+              <button 
+                className='md:hidden p-1.5 -ml-2 text-white/70 hover:text-white cursor-pointer'
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
               <span className='text-xs font-semibold uppercase tracking-wider text-white/40 hidden md:inline'>AI Model:</span>
-              <div className='flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-2xl overflow-x-auto'>
+              <div className='flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-2xl overflow-x-auto max-w-[200px] md:max-w-none no-scrollbar'>
                 {models.map((m) => (
                   <button
                     key={m.id}
@@ -191,7 +210,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Mobile Actions */}
+            {/* Mobile Actions (Hidden since we have sidebar now) */}
             <div className='flex items-center gap-2 md:hidden'>
               <button
                 onClick={() => chat.handleStartNewChat()}
@@ -199,13 +218,6 @@ const Dashboard = () => {
                 className='rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300'
               >
                 + New
-              </button>
-              <button
-                onClick={() => auth.handleLogout()}
-                type='button'
-                className='cursor-pointer rounded-xl border border-red-500/60 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500 hover:text-white'
-              >
-                Logout
               </button>
             </div>
           </div>
