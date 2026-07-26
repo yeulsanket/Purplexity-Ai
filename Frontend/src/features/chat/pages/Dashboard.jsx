@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useChat } from '../hooks/useChat';
+import { setError } from '../chat.slice';
 import { useAuth } from '../../auth/hook/useAuth';
 import remarkGfm from 'remark-gfm';
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
   const chat = useChat();
   const auth = useAuth();
   const [chatInput, setChatInput] = useState('');
@@ -17,6 +19,7 @@ const Dashboard = () => {
   const chats = useSelector((state) => state.chat.chats) || {};
   const currentChatId = useSelector((state) => state.chat.currentChatId);
   const isLoading = useSelector((state) => state.chat.isLoading);
+  const error = useSelector((state) => state.chat.error);
   const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
@@ -132,6 +135,17 @@ const Dashboard = () => {
             className="fixed inset-0 z-40 bg-black/60 md:hidden backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
+        )}
+
+        {/* Global Error Banner */}
+        {error && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md animate-bounce">
+            <span>⚠️</span>
+            <span className="font-semibold text-sm">{error}</span>
+            <button onClick={() => dispatch(setError(null))} className="ml-2 bg-black/20 hover:bg-black/40 rounded-full p-1 cursor-pointer">
+              ✕
+            </button>
+          </div>
         )}
 
         {/* Sidebar */}

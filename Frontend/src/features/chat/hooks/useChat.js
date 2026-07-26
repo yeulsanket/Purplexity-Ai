@@ -37,6 +37,7 @@ export const useChat = () => {
                 console.log("Request aborted")
             } else {
                 console.error("Failed to send message:", err)
+                dispatch(setError(err.message || "Failed to send message. Is your backend URL correct?"))
             }
         } finally {
             dispatch(setLoading(false))
@@ -52,18 +53,24 @@ export const useChat = () => {
 
     async function handleGetChats() {
         dispatch(setLoading(true))
-        const data = await getChats()
-        const { chats } = data
-        dispatch(setChats(chats.reduce((acc, chat) => {
-            acc[ chat._id ] = {
-                id: chat._id,
-                title: chat.title,
-                messages: [],
-                lastUpdated: chat.updatedAt,
-            }
-            return acc
-        }, {})))
-        dispatch(setLoading(false))
+        try {
+            const data = await getChats()
+            const { chats } = data
+            dispatch(setChats(chats.reduce((acc, chat) => {
+                acc[ chat._id ] = {
+                    id: chat._id,
+                    title: chat.title,
+                    messages: [],
+                    lastUpdated: chat.updatedAt,
+                }
+                return acc
+            }, {})))
+        } catch (err) {
+            console.error("Failed to load chats:", err)
+            dispatch(setError(err.message || "Failed to load chats. Check your backend connection."))
+        } finally {
+            dispatch(setLoading(false))
+        }
     }
 
     async function handleOpenChat(chatId, chats) {
@@ -71,18 +78,23 @@ export const useChat = () => {
         console.log(chats[ chatId ]?.messages.length)
 
         if (chats[ chatId ]?.messages.length === 0) {
-            const data = await getMessages(chatId)
-            const { messages } = data
+            try {
+                const data = await getMessages(chatId)
+                const { messages } = data
 
-            const formattedMessages = messages.map(msg => ({
-                content: msg.content,
-                role: msg.role,
-            }))
+                const formattedMessages = messages.map(msg => ({
+                    content: msg.content,
+                    role: msg.role,
+                }))
 
-            dispatch(addMessages({
-                chatId,
-                messages: formattedMessages,
-            }))
+                dispatch(addMessages({
+                    chatId,
+                    messages: formattedMessages,
+                }))
+            } catch (err) {
+                console.error("Failed to load messages:", err)
+                dispatch(setError("Failed to load messages. Check your connection."))
+            }
         }
         dispatch(setCurrentChatId(chatId))
     }
