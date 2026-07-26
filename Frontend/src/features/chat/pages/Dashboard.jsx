@@ -20,7 +20,6 @@ const Dashboard = () => {
   const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
-    chat.initializeSocketConnection();
     chat.handleGetChats();
   }, []);
 
