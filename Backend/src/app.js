@@ -7,15 +7,24 @@ import cors from "cors";
 
 const app = express();
 
+// Trust proxy for Railway/Vercel to correctly set secure cookies
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+        if (!origin || origin === process.env.FRONTEND_URL || origin.endsWith("vercel.app") || origin.includes("localhost")) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
-    methods: [ "GET", "POST", "PUT", "DELETE" ],
+    methods: [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
 }))
 
 // Health check
