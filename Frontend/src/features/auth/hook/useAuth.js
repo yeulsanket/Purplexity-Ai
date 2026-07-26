@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { register, login, getMe } from "../service/auth.api";
+import { register, login, getMe, logout } from "../service/auth.api";
 import { setUser, setLoading, setError } from "../auth.slice";
 
 
@@ -13,6 +13,7 @@ export function useAuth() {
             dispatch(setLoading(true))
             dispatch(setError(null))
             const data = await register({ email, username, password })
+            dispatch(setUser(data.user))
             return true
         } catch (error) {
             dispatch(setError(error.response?.data?.message || "Registration failed"))
@@ -49,8 +50,12 @@ export function useAuth() {
         }
     }
 
-    function handleLogout() {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    async function handleLogout() {
+        try {
+            await logout();
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
         dispatch(setUser(null));
     }
 

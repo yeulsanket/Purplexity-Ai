@@ -25,7 +25,7 @@ const Register = () => {
 
     const success = await handleRegister(payload)
     if (success) {
-      navigate('/login')
+      navigate('/')
     }
   }
 

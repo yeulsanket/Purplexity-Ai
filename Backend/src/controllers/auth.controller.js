@@ -25,6 +25,19 @@ export async function register(req, res) {
 
     const user = await userModel.create({ username, email, password, verified: true })
 
+    const token = jwt.sign({
+        id: user._id,
+        username: user.username,
+    }, process.env.JWT_SECRET, { expiresIn: '7d' })
+
+    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL !== undefined;
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+
     res.status(201).json({
         message: "User registered successfully",
         success: true,
@@ -65,14 +78,6 @@ export async function login(req, res) {
             message: "Invalid email or password",
             success: false,
             err: "Incorrect password"
-        })
-    }
-
-    if (!user.verified) {
-        return res.status(400).json({
-            message: "Please verify your email before logging in",
-            success: false,
-            err: "Email not verified"
         })
     }
 
@@ -124,6 +129,24 @@ export async function getMe(req, res) {
         message: "User details fetched successfully",
         success: true,
         user
+    })
+}
+
+/**
+ * @desc Logout user by clearing HTTP-only cookie
+ * @route POST /api/auth/logout
+ * @access Public
+ */
+export async function logout(req, res) {
+    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL !== undefined;
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+    })
+    res.status(200).json({
+        message: "Logged out successfully",
+        success: true
     })
 }
 
