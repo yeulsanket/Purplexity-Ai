@@ -30,7 +30,7 @@ export async function register(req, res) {
         username: user.username,
     }, process.env.JWT_SECRET, { expiresIn: '7d' })
 
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL !== undefined;
+    const isProduction = process.env.NODE_ENV === "production" || (req.headers.origin && !req.headers.origin.includes("localhost"));
     res.cookie("token", token, {
         httpOnly: true,
         secure: isProduction,
@@ -86,7 +86,7 @@ export async function login(req, res) {
         username: user.username,
     }, process.env.JWT_SECRET, { expiresIn: '7d' })
 
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL !== undefined;
+    const isProduction = process.env.NODE_ENV === "production" || (req.headers.origin && !req.headers.origin.includes("localhost"));
     res.cookie("token", token, {
         httpOnly: true,
         secure: isProduction,
@@ -138,7 +138,7 @@ export async function getMe(req, res) {
  * @access Public
  */
 export async function logout(req, res) {
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL !== undefined;
+    const isProduction = process.env.NODE_ENV === "production" || (req.headers.origin && !req.headers.origin.includes("localhost"));
     res.clearCookie("token", {
         httpOnly: true,
         secure: isProduction,
